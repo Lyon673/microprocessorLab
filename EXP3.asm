@@ -63,11 +63,10 @@ WRONG3:
 
 WRONGIMFORMATION:
         MOV WRONGLETTERERROR,0
-        MOV HAVEF,0
         INC STRINGNUM
 LETTER:
-        ;CALL OVERFLOWNUM
-        ;CALL STORENUM
+        CALL STORENUM
+        MOV HAVEF,0
         DEC STRINGNUM
         CMP STRINGNUM,0
         JNZ ENTER10
@@ -79,7 +78,7 @@ LETTER:
         MOV AH,4CH
         INT 21H
 
-;检查错误符号函数
+;--------检查错误符号函数
 WRONGLETTER:
         MOV BX, OFFSET ONENUM
         ADD BX, 2
@@ -145,7 +144,14 @@ PASSLETTER:
 PASSSTRING:
         RET
         
+;--------将输入字符串转换为整数储存
+STORENUM:
+        MOV BX, ONENUM[2]
+        CMP HAVEF,0
+        JZ POSITIVE
+        INC BX
 
+POSITIVE:
 
 
 CSEG    ENDS
