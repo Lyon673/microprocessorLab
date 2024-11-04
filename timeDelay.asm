@@ -1,0 +1,14 @@
+CSEG    SEGMENT
+        ASSUME  CS:CSEG
+.386
+BEGIN:
+        MOV CX, 40000
+
+TIMEDELAY:
+        NOP
+        LOOP TIMEDELAY
+
+        MOV AH,4CH
+        INT 21H
+CSEG    ENDS
+        END  BEGIN
