@@ -12,13 +12,13 @@ BEGIN:  MOV AX,DSEG
 
         MOV BL, NUMB[0]
         SUB BL, NUMB[1]
-        MOV RESULT1 BL
+        MOV RESULT1,BL
 
 
         MOV AX, 0
         MOV AL, NUMB[0]
         DIV NUMB[1]
-        MOV RESULT2 AL
+        MOV RESULT2, AL
 
 
         MOV AH,4CH
