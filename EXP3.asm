@@ -4,6 +4,8 @@ DSEG    SEGMENT
         NEGATIVENUM DB  ?
         CORRECTLETTER DB '0123456789$'
         DISPLAYARRAY DB 12 DUP(?)
+        SUM DD 0
+        ORDER DD 10 DUP(0)
 
         WRONGLETTERIMFORMATION1 DB 'ERROR: The input number is overflow.',0DH,0AH,24H
         WRONGLETTERIMFORMATION2 DB 'ERROR: The first effect letter of the input number is 0.',0DH,0AH,24H
@@ -12,10 +14,15 @@ DSEG    SEGMENT
         WRONGLETTERERROR DB 0
         INPUTIMFORMATION DB 'Input:$'
         NEGATIVEIMFORMATION DB '-$'
-        COUNTNEGATIVEIMFORMATION DB 'The negative'
+        COUNTNEGATIVEIMFORMATION DB 'The count of negative numbers is $'
+        SUMALLIMFORMATION DB 'The sum of all input numbers is $'
+        SORTIMFORMATION1 DB 'The sorted array is [$'
+        SORTIMFORMATION2 DB ' $'
+        SORTIMFORMATION3 DB ' ]$'
 
         HAVEF DB 0
         STRINGNUM DB 10
+        SORTINDEX DW 0
 
 DSEG    ENDS
 
@@ -45,7 +52,7 @@ ENTER10:
         INT 21H
         PRINT ENDIMFORMATION
 
-        ;CALL WRONGLETTER
+        CALL WRONGLETTER
         CMP WRONGLETTERERROR,0
         JZ LETTER
 
@@ -76,7 +83,7 @@ LETTER:
         MOV DI,0
         MOV CX, 20
 CLEAR1:
-        MOV [BX+DI],0
+        MOV BYTE PTR [BX+DI],0
         INC DI
         LOOP CLEAR1
 
@@ -86,9 +93,21 @@ CLEAR1:
         JNZ ENTER10
         
         ; 统计负数个数
+        PRINT COUNTNEGATIVEIMFORMATION
         CALL COUNTNEGATIVE
         CALL DISPLAYINT
+        PRINT ENDIMFORMATION
 
+        ; 求出所有数的总和,存放在SUM这块内存中
+        PRINT SUMALLIMFORMATION
+        CALL SUMALL
+        MOV SUM, EDX
+        CALL DISPLAYINT
+        PRINT ENDIMFORMATION
+
+        ;冒泡排序
+        CALL SORT
+        CALL DISPLAYSORTEDARRAY
 
         MOV AH,4CH
         INT 21H
@@ -203,7 +222,7 @@ COUNTNEGATIVE:
 
 COUNT1:
         CMP NUM[DI],0
-        JBE POSITIVE3
+        JGE POSITIVE3
         INC DX
 POSITIVE3:
         ADD DI,4
@@ -213,9 +232,13 @@ POSITIVE3:
 ; 显示整数的函数，整数必须放在EDX中,执行完该函数原数据丢失，只有字符串数据
 DISPLAYINT:
         LEA BX, DISPLAYARRAY ;DISPLAYARRAY清零
-        MOV CX, 12
-        MOV AL, '$'
-        REP STOSB 
+        MOV DI, 0
+CLEAR2:
+        MOV BYTE PTR [BX+DI], '$'
+        INC DI
+        CMP DI, 12
+        JNZ CLEAR2
+
 
         MOV SI, 11
         MOV EAX, EDX
@@ -250,7 +273,58 @@ COPYNUM:
         PRINT DISPLAYARRAY
         RET
         
+;--------求出所有数总和的函数
+SUMALL:
+        MOV CX,10
+        MOV EDX,0
+        MOV DI, 0
+SUMP:
+        ADD EDX, NUM[DI]
+        ADD DI, 4
+        LOOP SUMP
+        RET
 
+;-------冒泡排序的函数
+SORT:
+        MOV CX, 9
+LP1:
+        MOV DI, CX
+        MOV BX, 0
+LP2:
+        MOV EDX, NUM[BX]
+        CMP EDX, NUM[BX+4]
+        JLE NEXT
+        XCHG EDX, NUM[BX+4]
+        MOV NUM[BX],EDX
+NEXT:
+        ADD BX,4
+        DEC DI
+        JNZ LP2
+        LOOP LP1
+
+        CLD ;拷贝NUM到ORDER
+        LEA SI, NUM
+        LEA DI, ORDER
+        MOV CX, 10
+        REP MOVSD
+
+        RET
+
+;--------显示排序好的数组的函数
+DISPLAYSORTEDARRAY:
+        PRINT SORTIMFORMATION1
+DISPLAY1:
+        PRINT SORTIMFORMATION2
+        MOV DI, SORTINDEX
+        MOV EDX, ORDER[DI]
+        CALL DISPLAYINT
+        ADD WORD PTR SORTINDEX, 4
+        CMP SORTINDEX, 40
+        JNZ DISPLAY1
+
+        PRINT SORTIMFORMATION3
+        PRINT ENDIMFORMATION
+        RET
 
 
 
