@@ -6,10 +6,12 @@ DSEG    SEGMENT
         DISPLAYARRAY DB 12 DUP(?)
         SUM DD 0
         ORDER DD 10 DUP(0)
+        JMPTABLE DW 3 DUP(0)
 
         WRONGLETTERIMFORMATION1 DB 'ERROR: The input number is overflow.',0DH,0AH,24H
         WRONGLETTERIMFORMATION2 DB 'ERROR: The first effect letter of the input number is 0.',0DH,0AH,24H
         WRONGLETTERIMFORMATION3 DB 'ERROR: There is an illegal number.',0DH,0AH,24H
+        WRONGLETTERIMFORMATION4 DB 'ERROR: The input is null.',0DH,0AH,24H
         ENDIMFORMATION DB 0DH,0AH,24H
         WRONGLETTERERROR DB 0
         INPUTIMFORMATION DB 'Input:$'
@@ -19,6 +21,11 @@ DSEG    SEGMENT
         SORTIMFORMATION1 DB 'The sorted array is [$'
         SORTIMFORMATION2 DB ' $'
         SORTIMFORMATION3 DB ' ]$'
+
+        INSTRUCTIONIMFORMATION1 DB 'Please enter your instruction:',0DH,0AH,24H
+        INSTRUCTIONIMFORMATION2 DB '(1 for neg count, 2 for sum ,3 for sort ,4 for enter again, q for quit)',0DH,0AH,24H
+        WRONGINSTRUCTIONIMFORMATION DB 'The instruction code is undefined. Please enter again.',0DH,0AH,24H
+
 
         HAVEF DB 0
         STRINGNUM DB 10
@@ -69,16 +76,24 @@ WRONG2:
         JMP WRONGIMFORMATION
 
 WRONG3:
+        CMP WRONGLETTERERROR,3
+        JNZ WRONG4
         PRINT WRONGLETTERIMFORMATION3
         JMP WRONGIMFORMATION
 
+WRONG4:
+        PRINT WRONGLETTERIMFORMATION4
+        JMP WRONGIMFORMATION
 
 WRONGIMFORMATION:
-        MOV WRONGLETTERERROR,0
         INC STRINGNUM
 LETTER:
+        CMP WRONGLETTERERROR,0
+        JNZ HAVEWRONG
         CALL STORENUM
 
+HAVEWRONG:
+        MOV WRONGLETTERERROR,0
         LEA BX, ONENUM+2 ;ONENUM清零
         MOV DI,0
         MOV CX, 20
@@ -91,32 +106,102 @@ CLEAR1:
         DEC STRINGNUM
         CMP STRINGNUM,0
         JNZ ENTER10
+
+INSTRUCTION:        
+        PRINT INSTRUCTIONIMFORMATION1
+        PRINT INSTRUCTIONIMFORMATION2
         
+
+        MOV AH, 01H
+        INT 21H
+
+
+
+        CMP AL, '1'
+        JZ INSTRUCTION1
+
+        CMP AL, '2'
+        JZ INSTRUCTION2
+
+        CMP AL, '3'
+        JZ INSTRUCTION3
+
+        CMP AL, '4'
+        JZ INSTRUCTION4
+
+        CMP AL, 'q'
+        JZ OVER
+
+        CMP AL, 'Q'
+        JZ OVER
+
+        PRINT ENDIMFORMATION
+        PRINT WRONGINSTRUCTIONIMFORMATION
+        JMP INSTRUCTION
+
+
+INSTRUCTION1:
+        PRINT ENDIMFORMATION
+        CALL COUNTFUN
+        JMP INSTRUCTION
+
+INSTRUCTION2:
+        PRINT ENDIMFORMATION
+        CALL SUMFUN
+        JMP INSTRUCTION
+
+INSTRUCTION3:
+        PRINT ENDIMFORMATION
+        CALL SORTFUN
+        JMP INSTRUCTION
+
+INSTRUCTION4:
+        PRINT ENDIMFORMATION
+        MOV STRINGNUM, 10
+        JMP ENTER10
+
+
+OVER:
+        MOV AH,4CH
+        INT 21H
+
+
+
+COUNTFUN:
         ; 统计负数个数
         PRINT COUNTNEGATIVEIMFORMATION
         CALL COUNTNEGATIVE
         CALL DISPLAYINT
         PRINT ENDIMFORMATION
+        RET
 
+SUMFUN:
         ; 求出所有数的总和,存放在SUM这块内存中
         PRINT SUMALLIMFORMATION
         CALL SUMALL
         MOV SUM, EDX
         CALL DISPLAYINT
         PRINT ENDIMFORMATION
+        RET
 
+SORTFUN:
         ;冒泡排序
         CALL SORT
         CALL DISPLAYSORTEDARRAY
+        RET
 
-        MOV AH,4CH
-        INT 21H
 
 ;--------检查错误符号函数
 WRONGLETTER:
         LEA BX, ONENUM
         ADD BX, 2
 
+        CMP ONENUM[1],0
+        JNZ NOTNONE
+        MOV WRONGLETTERERROR,4 ;WRONGLETTERERROR的值为4，代表输入为空的字符
+        RET
+
+NOTNONE:
         CMP ONENUM[1],1
         JZ CHEAKWRONGLETTER
 
@@ -230,7 +315,7 @@ POSITIVE3:
         RET
 
 ; 显示整数的函数，整数必须放在EDX中,执行完该函数原数据丢失，只有字符串数据
-DISPLAYINT:
+DISPLAYINT PROC NEAR
         LEA BX, DISPLAYARRAY ;DISPLAYARRAY清零
         MOV DI, 0
 CLEAR2:
@@ -272,7 +357,10 @@ COPYNUM:
 
         PRINT DISPLAYARRAY
         RET
-        
+
+DISPLAYINT ENDP
+
+
 ;--------求出所有数总和的函数
 SUMALL:
         MOV CX,10
@@ -293,7 +381,7 @@ LP1:
 LP2:
         MOV EDX, NUM[BX]
         CMP EDX, NUM[BX+4]
-        JLE NEXT
+        JL NEXT
         XCHG EDX, NUM[BX+4]
         MOV NUM[BX],EDX
 NEXT:
@@ -312,6 +400,7 @@ NEXT:
 
 ;--------显示排序好的数组的函数
 DISPLAYSORTEDARRAY:
+        MOV SORTINDEX, 0
         PRINT SORTIMFORMATION1
 DISPLAY1:
         PRINT SORTIMFORMATION2
