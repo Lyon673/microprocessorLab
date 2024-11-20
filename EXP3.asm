@@ -21,9 +21,12 @@ DSEG    SEGMENT
         SORTIMFORMATION1 DB 'The sorted array is [$'
         SORTIMFORMATION2 DB ' $'
         SORTIMFORMATION3 DB ' ]$'
+        ORIGINIMFORMATION1 DB 'The original array is [$'
+        ORIGINIMFORMATION2 DB ' $'
+        ORIGINIMFORMATION3 DB ' ]$'
 
         INSTRUCTIONIMFORMATION1 DB 'Please enter your instruction:',0DH,0AH,24H
-        INSTRUCTIONIMFORMATION2 DB '(1 for neg count, 2 for sum ,3 for sort ,4 for enter again, q for quit)',0DH,0AH,24H
+        INSTRUCTIONIMFORMATION2 DB '(1 for neg count, 2 for sum, 3 for sort, 4 for print original array, 5 for enter again, q for quit)',0DH,0AH,24H
         WRONGINSTRUCTIONIMFORMATION DB 'The instruction code is undefined. Please enter again.',0DH,0AH,24H
 
 
@@ -129,6 +132,9 @@ INSTRUCTION:
         CMP AL, '4'
         JZ INSTRUCTION4
 
+        CMP AL, '5'
+        JZ INSTRUCTION5
+
         CMP AL, 'q'
         JZ OVER
 
@@ -156,6 +162,11 @@ INSTRUCTION3:
         JMP INSTRUCTION
 
 INSTRUCTION4:
+        PRINT ENDIMFORMATION
+        CALL PRINTORIGINFUN
+        JMP INSTRUCTION
+
+INSTRUCTION5:
         PRINT ENDIMFORMATION
         MOV STRINGNUM, 10
         JMP ENTER10
@@ -316,6 +327,7 @@ POSITIVE3:
 
 ; 显示整数的函数，整数必须放在EDX中,执行完该函数原数据丢失，只有字符串数据
 DISPLAYINT PROC NEAR
+        PUSH CX
         LEA BX, DISPLAYARRAY ;DISPLAYARRAY清零
         MOV DI, 0
 CLEAR2:
@@ -356,6 +368,7 @@ COPYNUM:
         JNZ COPYNUM
 
         PRINT DISPLAYARRAY
+        POP CX
         RET
 
 DISPLAYINT ENDP
@@ -374,27 +387,29 @@ SUMP:
 
 ;-------冒泡排序的函数
 SORT:
-        MOV CX, 9
-LP1:
-        MOV DI, CX
-        MOV BX, 0
-LP2:
-        MOV EDX, NUM[BX]
-        CMP EDX, NUM[BX+4]
-        JL NEXT
-        XCHG EDX, NUM[BX+4]
-        MOV NUM[BX],EDX
-NEXT:
-        ADD BX,4
-        DEC DI
-        JNZ LP2
-        LOOP LP1
 
         CLD ;拷贝NUM到ORDER
         LEA SI, NUM
         LEA DI, ORDER
         MOV CX, 10
         REP MOVSD
+
+        MOV CX, 9
+LP1:
+        MOV DI, CX
+        MOV BX, 0
+LP2:
+        MOV EDX, ORDER[BX]
+        CMP EDX, ORDER[BX+4]
+        JL NEXT
+        XCHG EDX, ORDER[BX+4]
+        MOV ORDER[BX],EDX
+NEXT:
+        ADD BX,4
+        DEC DI
+        JNZ LP2
+        LOOP LP1
+
 
         RET
 
@@ -413,6 +428,28 @@ DISPLAY1:
 
         PRINT SORTIMFORMATION3
         PRINT ENDIMFORMATION
+        RET
+
+PRINTORIGINFUN:
+        PUSH CX
+        PUSH DI
+
+        MOV CX, 0
+        PRINT ORIGINIMFORMATION1
+DISPLAY2:
+        PRINT ORIGINIMFORMATION2
+        MOV DI, CX
+        MOV EDX, NUM[DI]
+        CALL DISPLAYINT
+        ADD CX, 4
+        CMP CX, 40
+        JNZ DISPLAY2
+
+        PRINT ORIGINIMFORMATION3
+        PRINT ENDIMFORMATION
+
+        POP DI
+        POP CX
         RET
 
 
