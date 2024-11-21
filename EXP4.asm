@@ -1,12 +1,13 @@
 DSEG    SEGMENT
         QUANCIRCLEY DW 300 DUP(0) ;存y坐标
-        R DW 500
+        R DW 230
         XORG DW 320
         YORG DW 240
         COLOR EQU 10
 
         FORMERY DW 0
         LATTERY DW 0
+        DIRECTION DB 0
      
 
         FLAG DB 0
@@ -79,17 +80,60 @@ CALCULATEY ENDP
 WRITECIRCLE PROC NEAR
         MOV AH, 0CH
         MOV AL, COLOR
-        MOV CX, XORG ; 列数
-        SUB CX, R
+        
         MOV DX, 0 ; 行数
         MOV SI, 0
 LP1:
-        MOV DX, QUANCIRCLEY[SI]
-        ADD DX, YORG
+        MOV DX, YORG
+        MOV BX, YORG
+
+        
         MOV DI, SI
+
+
+
+        CMP DIRECTION, 0
+        JE LU1
+        CMP DIRECTION, 1
+        JE RU1
+        CMP DIRECTION, 2
+        JE RD1
+        CMP DIRECTION, 3
+        JE LD1
+
+LU1:
         ADD DI, 2
-        MOV BX, QUANCIRCLEY[DI]
-        ADD BX, YORG
+        MOV CX, XORG ; 列数
+        SUB CX, R
+        SUB DX, QUANCIRCLEY[SI] ; DX存当前的y坐标
+        SUB BX, QUANCIRCLEY[DI] ; BX存当前位置下一个位置的y坐标
+        INC BX
+        JMP NOTOVER
+
+RU1:
+        ADD DI, 2
+        MOV CX, XORG ; 列数
+        SUB DX, QUANCIRCLEY[SI] ; DX存当前的y坐标
+        SUB BX, QUANCIRCLEY[DI] ; BX存当前位置下一个位置的y坐标
+        DEC BX
+        JMP NOTOVER
+
+RD1:
+        SUB DI, 2
+        MOV CX, XORG ; 列数
+        ADD CX, R
+        ADD DX, QUANCIRCLEY[SI] ; DX存当前的y坐标
+        ADD BX, QUANCIRCLEY[DI] ; BX存当前位置下一个位置的y坐标
+        DEC BX
+        JMP NOTOVER
+
+
+LD1:
+        SUB DI, 2
+        MOV CX, XORG ; 列数
+        ADD DX, QUANCIRCLEY[SI] ; DX存当前的y坐标
+        ADD BX, QUANCIRCLEY[DI] ; BX存当前位置下一个位置的y坐标
+        INC BX
 
 
 NOTOVER:
@@ -98,23 +142,36 @@ NOTOVER:
         INT 10H
         POP BX
 
-        CMP DX, BX
-        JE SAMEOVER
-        INC DX
-        JMP NOTOVER
+        CMP DIRECTION, 0
+        JE LU2
+        CMP DIRECTION, 1
+        JE RU2
+        CMP DIRECTION, 2
+        JE RD2
+        CMP DIRECTION, 3
+        JE LD2
 
-SAMEOVER:
+LU2:
+        CMP DX, BX ;如果比下一行的值大1个以上，就继续，否则跳出
+        JLE OVERLU1
+        DEC DX
+        JMP NOTOVER
+OVERLU1:
         ADD SI, 2
         INC CX
         CMP CX, XORG
         JNZ LP1
+
+RU2:
+RD2:
+LD2:
 
         RET
 
 WRITECIRCLE ENDP
 
 
-    
+; 开平方的函数，输入输出都在SI当中    
 SQROOT  PROC  NEAR
         PUSH AX
         PUSH BX
