@@ -1,6 +1,7 @@
 DSEG    SEGMENT
         QUANCIRCLEY DW 300 DUP(0) ;存y坐标
-        R DW 3
+        SAMENUM DB 300 DUP(0)
+        R DW 100
         XORG DW 320
         YORG DW 240
         COLOR EQU 10
@@ -71,6 +72,9 @@ CAL:
         ADD DI, 2
         LOOP CAL
 
+        MOV AX, R
+        MOV QUANCIRCLEY[DI],AX
+
         POP AX
 
         POP SI
@@ -92,7 +96,7 @@ WRITECIRCLE PROC NEAR
         MOV BIND1, DX
         MOV DX, XORG
         ADD DX, R
-        SUB DX, 2
+        ADD DX, 1
         MOV UPPERBIND, DX
         MOV DX, XORG
         INC DX
@@ -112,12 +116,14 @@ WRITECIRCLE PROC NEAR
         CMP DIRECTION, 3
         JE LD
 
+
+
 ; 左上方圆
 LU:
 
+        MOV SI, 0
         MOV CX, XORG ; 列数
         SUB CX, R
-        ADD CX, 1
 
 LP1:
         MOV DX, YORG
@@ -147,11 +153,21 @@ OVERLU:
         JNZ LP1
 
 
+
+
 ; 右上方圆
 RU:
 
-        MOV SI, 0
+        MOV SI, R
+        ADD SI, R
+        SUB SI, 2
+
+
         MOV CX, XORG ; 列数
+        MOV DX, YORG
+        SUB DX, R
+        INT 10H
+        INC CX
 
 LP2:
         MOV DX, YORG
@@ -161,21 +177,14 @@ LP2:
 
         ADD DI, 2
         ; 倒置遍历存的圆圈位置坐标
-        PUSH SI
-        PUSH DI
-        SUB SI, R
-        SUB SI, R
-        ADD SI, 4
-        NEG SI
-        SUB DI, R
-        SUB DI, R
-        ADD DI, 4
-        NEG DI
-        SUB DX, QUANCIRCLEY[SI] ; DX存当前的y坐标
-        SUB BX, QUANCIRCLEY[DI] ; BX存当前位置下一个位置的y坐标
-        POP DI
-        POP SI
-        DEC BX
+
+        SUB BX, QUANCIRCLEY[SI] ; BX存当前的y坐标
+        SUB DX, QUANCIRCLEY[DI] ; DX存当前位置上一个位置的y坐标
+        CMP BX, DX
+        JZ NOTOVERRU
+        INC DX
+
+
 
 
 NOTOVERRU:
@@ -188,11 +197,14 @@ NOTOVERRU:
         JGE OVERRU
         INC DX
         JMP NOTOVERRU
+
 OVERRU:
-        ADD SI, 2
+        SUB SI, 2
         INC CX
         CMP CX, UPPERBIND
         JNZ LP2
+
+
 
 
 ; 右下方圆
@@ -202,14 +214,12 @@ RD:
         MOV SI, 0
         MOV CX, XORG ; 列数
         ADD CX, R
-        SUB CX, 3
 
 LP3:
         MOV DX, YORG
         MOV BX, YORG
 
         MOV DI, SI
-        
         ADD DI, 2
 
        
@@ -231,7 +241,7 @@ NOTOVERRD:
 OVERRD:
         ADD SI, 2
         DEC CX
-        CMP CX, BIND1
+        CMP CX, XORG
         JNZ LP3
 
 
@@ -240,8 +250,16 @@ OVERRD:
 
 LD:
 
-        MOV SI, 0
+        MOV SI, R
+        ADD SI, R
+        SUB SI, 2
+
         MOV CX, XORG ; 列数
+
+        MOV DX, YORG
+        ADD DX, R
+        MOV BX, 0
+        INT 10H
         DEC CX
 
 LP4:
@@ -251,21 +269,12 @@ LP4:
         MOV DI, SI
         
         ADD DI, 2
-        PUSH SI
-        PUSH DI
-        SUB SI, R
-        SUB SI, R
-        ADD SI, 2
-        NEG SI
-        SUB DI, R
-        SUB DI, R
-        ADD DI, 2
-        NEG DI
+        
         ADD DX, QUANCIRCLEY[SI] ; DX存当前的y坐标
         ADD BX, QUANCIRCLEY[DI] ; BX存当前位置下一个位置的y坐标
-        POP DI
-        POP SI
-        INC BX
+        CMP DX, BX
+        JZ NOTOVERLD
+        INC DX
 
 NOTOVERLD:
         PUSH BX
@@ -274,11 +283,11 @@ NOTOVERLD:
         POP BX
 
         CMP DX, BX ;如果比下一行的值大1个以上，就继续，否则跳出
-        JLE OVERLD
-        DEC DX
+        JGE OVERLD
+        INC DX
         JMP NOTOVERLD
 OVERLD:
-        ADD SI, 2
+        SUB SI, 2
         DEC CX
         CMP CX, LOWERBIND
         JNZ LP4
