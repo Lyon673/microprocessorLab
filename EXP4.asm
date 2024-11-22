@@ -16,6 +16,7 @@ DSEG    SEGMENT
         LOWERBIND DW 0
 
         FLAG DB 0
+        COLORFLAG DB 0
 
 DSEG    ENDS
 
@@ -30,6 +31,8 @@ SCREEN MACRO
         MOV BX,0
         INT 10H
 ENDM
+
+
 
 CSEG    SEGMENT
         ASSUME  CS:CSEG,DS:DSEG
@@ -140,6 +143,7 @@ NOTOVERLU:
         PUSH BX
         MOV BX, 0
         INT 10H
+        CALL DELAYANDCOLOR
         POP BX
 
         CMP DX, BX ;如果比下一行的值大1个以上，就继续，否则跳出
@@ -167,6 +171,8 @@ RU:
         MOV DX, YORG
         SUB DX, R
         INT 10H
+        CALL DELAYANDCOLOR
+
         INC CX
 
 LP2:
@@ -191,6 +197,7 @@ NOTOVERRU:
         PUSH BX
         MOV BX, 0
         INT 10H
+        CALL DELAYANDCOLOR
         POP BX
 
         CMP DX, BX ;如果比下一行的值大1个以上，就继续，否则跳出
@@ -232,6 +239,7 @@ NOTOVERRD:
         PUSH BX
         MOV BX, 0
         INT 10H
+        CALL DELAYANDCOLOR
         POP BX
 
         CMP DX, BX ;如果比下一行的值大1个以上，就继续，否则跳出
@@ -260,6 +268,7 @@ LD:
         ADD DX, R
         MOV BX, 0
         INT 10H
+        CALL DELAYANDCOLOR
         DEC CX
 
 LP4:
@@ -280,6 +289,7 @@ NOTOVERLD:
         PUSH BX
         MOV BX, 0
         INT 10H
+        CALL DELAYANDCOLOR
         POP BX
 
         CMP DX, BX ;如果比下一行的值大1个以上，就继续，否则跳出
@@ -292,7 +302,6 @@ OVERLD:
         CMP CX, LOWERBIND
         JNZ LP4
 
-        JMP FINAL
 
 
 FINAL:
@@ -320,7 +329,30 @@ OVER:  MOV SI,CX ;平方根放回原堆栈区
         POP BX
         POP AX
         RET
-SQROOT ENDP 
+SQROOT ENDP
+
+DELAYANDCOLOR PROC NEAR
+        PUSH CX
+        PUSH DX
+        MOV DL, 1
+        SUB DL, COLORFLAG
+        MOV COLORFLAG, DL
+        CMP DL, 0
+        JZ COLOR1
+        MOV AL, 8
+COLOR1: 
+        MOV AL, 10
+
+        MOV CX, 10000
+TIMEDELAY:
+        NOP
+        LOOP TIMEDELAY
+
+        POP DX
+        POP CX
+        RET
+DELAYANDCOLOR ENDP
+
     
 CSEG    ENDS
         END  BEGIN
