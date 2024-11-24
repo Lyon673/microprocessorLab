@@ -34,5 +34,10 @@ BEGIN:  MOV AX,DSEG
         MOV BL, 0FH        ; 白色前景，黑色背景
         INT 10H            ; 调用 BIOS
 
+         MOV AH, 0EH        ; BIOS 功能：显示字符
+        MOV AL, 'G'         ; 显示字符 'H'
+        MOV BL, 0FH        ; 白色前景，黑色背景
+        INT 10H            ; 调用 BIOS
+
 CSEG    ENDS
         END  BEGIN

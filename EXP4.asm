@@ -74,17 +74,7 @@ NOTONE:
         CALL WRITESQUARE
 
 RETURN:
-        MOV AH, 2        ; BIOS 功能：设置光标位置
-        MOV BH, 0        ; 页号，通常为 0
-        MOV DL, 10          ; X 坐标（列）
-        MOV DH, 10          ; Y 坐标（行）
-        INT 10H            ; 调用 BIOS
-
-        ; 绘制字符
-        MOV AH, 0EH        ; BIOS 功能：显示字符
-        MOV AL, 'H'         ; 显示字符 'H'
-        MOV BL, 0FH        ; 白色前景，黑色背景
-        INT 10H            ; 调用 BIOS
+        
 
 
 
