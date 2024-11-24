@@ -14,6 +14,8 @@ SCREEN MACRO
         INT 10H
 ENDM
 
+
+
 CSEG    SEGMENT
         ASSUME  CS:CSEG,DS:DSEG
 .386
@@ -38,6 +40,8 @@ BEGIN:  MOV AX,DSEG
         MOV AL, 'G'         ; 显示字符 'H'
         MOV BL, 0FH        ; 白色前景，黑色背景
         INT 10H            ; 调用 BIOS
-
+        
+        MOV AH,4CH
+        INT 21H
 CSEG    ENDS
         END  BEGIN
