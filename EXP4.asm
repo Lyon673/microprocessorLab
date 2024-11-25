@@ -1,12 +1,15 @@
 DSEG    SEGMENT
+        
         QUANCIRCLEY DW 300 DUP(0) ;存y坐标
         SAMENUM DB 300 DUP(0)
+
         R DW 0
         XORG DW 320
         YORG DW 240
         COLOR EQU 10
 
-        QUERYRIMFORMATION DB 'Please enter the R (from 1 to 240): '
+        QUERYSTRINGIMFORMATION DB 'Please enter the string: $'
+        QUERYRIMFORMATION DB 'Please enter the R (from 1 to 240): $'
         ENDIMFORMATION DB 0DH,0AH,24H
         RSTRING DB 5,0,5 DUP('$')
         
@@ -56,7 +59,6 @@ BEGIN:
         MOV AX,DSEG
         MOV DS,AX
 
-
         CALL QUERYR
         SCREEN
         CMP R, 0
@@ -74,13 +76,10 @@ NOTONE:
         CALL WRITESQUARE
 
 RETURN:
-        
-
-
-
-
+ 
         MOV AH,4CH
         INT 21H
+
 
 QUERYR PROC NEAR
         PRINT QUERYRIMFORMATION
