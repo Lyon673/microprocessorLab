@@ -1,15 +1,13 @@
 DSEG    SEGMENT
-        ONENUM DB  20,0,20 DUP('$')
         NUM DW 0
-        NEGATIVENUM DB  ?
-        CORRECTLETTER DB '0123456789ABCDEF$'
+        ONENUM DB 4 DUP(0)
+        CORRECTLETTER DB '0123456789ABCDEFabcdef$'
         DISPLAYARRAY DB 12 DUP(?)
         
 
-        WRONGLETTERIMFORMATION1 DB 'ERROR: The input number is overflow.',0DH,0AH,24H
-        WRONGLETTERIMFORMATION2 DB 'ERROR: The first effect letter of the input number is 0.',0DH,0AH,24H
-        WRONGLETTERIMFORMATION3 DB 'ERROR: There is an illegal number.',0DH,0AH,24H
-        WRONGLETTERIMFORMATION4 DB 'ERROR: The input is null.',0DH,0AH,24H
+        QUERYIMFORMATION DB 'Please input a 4-bit hexadecimal number: ',0DH,0AH,24H
+        ANWSERIMFORMATION DB 'ABCDH=$'
+
         ENDIMFORMATION DB 0DH,0AH,24H
         WRONGLETTERERROR DB 0
 DSEG    ENDS
@@ -18,17 +16,96 @@ SSEG    SEGMENT PARA STACK
         DW  256 DUP(?)
 SSEG    ENDS
 
+PRINT MACRO STRING
+        MOV AH,09H
+        LEA DX,STRING
+        INT 21H
+ENDM
 
 CSEG    SEGMENT
         ASSUME  CS:CSEG,DS:DSEG
 .386
 BEGIN:  MOV AX,DSEG
         MOV DS,AX
+        MOV ES,AX
 
         MOV CX, 4
+        MOV SI, 0
 
+        PRINT QUERYIMFORMATION
+        MOV SI, 0
 INPUT:
-        
+
+        MOV AH, 07H
+        INT 21H
+
+        MOV DI, 0
+
+CHECK:
+        CMP AL, CORRECTLETTER[DI]
+        JZ PASSLETTER
+        INC DI
+        CMP DI, 22
+        JNZ CHECK
+        JMP INPUT
+
+PASSLETTER:
+        MOV DL, AL
+        MOV AH, 02H
+        INT 21H
+        MOV ONENUM[SI],AL
+        INC SI
+        LOOP INPUT
+
+; 将输入的字符串计算为十进制放在NUM中
+        MOV CX, 4
+        MOV DI, 0
+CALCULATE:
+        MOV AX, NUM
+        MOV DX, 16
+        MUL DX
+        MOV DH, 0
+        MOV DL, ONENUM[DI]
+        INC DI
+
+        ADD AX, DX
+        SUB AX, 30H
+        CMP DX, 39H
+        JBE NUMBER
+        SUB AX, 7
+        CMP DX, 46H
+        JBE NUMBER
+        SUB AX, 32
+NUMBER:
+        MOV NUM, AX
+        LOOP CALCULATE
+
+; 显示十进制字符串
+
+        MOV DX, '$'
+        PUSH DX
+        PRINT ENDIMFORMATION
+        PRINT ANWSERIMFORMATION
+        MOV AX, NUM
+DISPLAY:
+        MOV DX, 0
+        MOV BX, 10
+        DIV BX
+        PUSH DX
+        CMP AX, 0
+        JNZ DISPLAY
+
+NOTOVER:
+        POP DX
+        CMP DX, '$'
+        JZ OVER
+        ADD DL, 30H
+        MOV AH, 02H
+        INT 21H
+        JMP NOTOVER
+
+
+OVER:
 
 
 
@@ -36,60 +113,6 @@ INPUT:
         INT 21H
 
 
-;--------检查错误符号函数
-WRONGLETTER:
-        LEA BX, ONENUM
-        ADD BX, 2
-
-        CMP ONENUM[1],0
-        JNZ NOTNONE
-        MOV WRONGLETTERERROR,4 ;WRONGLETTERERROR的值为4，代表输入为空的字符
-        RET
-
-NOTNONE:
-        CMP ONENUM[1],1
-        JZ CHEAKWRONGLETTER
-
-
-
-NOFLAG:
-        MOV DL, ONENUM[1]
-        CMP DL,4
-        JLE NOTOVERFLOW
-        MOV WRONGLETTERERROR,1 ;WRONGLETTERERROR的值为1，代表越界的错误
-
-NOTOVERFLOW:
-NOTZERO:
-         
-        ;MOV SI, 2   
-        ;ADD SI, HAVEF
-
-
-CHEAKWRONGLETTER:   ;遍历输入的字符串检查错误符号
-        CLD
-        MOV AX,0
-        MOV AL, [BX]
-        MOV CX, 16
-        LEA DI, CORRECTLETTER
-        REPNE SCASB
-        JE PASSLETTER ;字符为0~9，继续下个字符
-        MOV WRONGLETTERERROR, 2 ;返回值为2，表示非法字符
-        RET
-        
-PASSLETTER:
-        MOV DX,BX
-        LEA AX, ONENUM
-        SUB DX, AX
-        SUB DX,1
-        ;SUB AX, HAVEF
-        CMP DL, ONENUM[1]
-        JZ  PASSSTRING
-        INC BX
-        JMP CHEAKWRONGLETTER
-
-PASSSTRING:
-        RET
- 
 
 CSEG    ENDS
         END  BEGIN

@@ -62,6 +62,7 @@ ENTER10:
         INT 21H
         PRINT ENDIMFORMATION
 
+        CALL REMOVEEMPTY
         CALL WRONGLETTER
         CMP WRONGLETTERERROR,0
         JZ LETTER
@@ -176,6 +177,29 @@ OVER:
         MOV AH,4CH
         INT 21H
 
+REMOVEEMPTY PROC NEAR
+        PUSH DI
+        PUSH DX
+        MOV DX, 0
+        LEA DI, ONENUM[1]
+        MOV DL, ONENUM[1]
+        ADD DI, DX
+CHEAKEMPTY:
+        CMP BYTE PTR [DI], 20H
+        JNZ NONEMPTY
+        MOV [DI], '$'
+        DEC DL
+        MOV ONENUM[1], DL
+        DEC DI
+        JMP CHEAKEMPTY
+
+NONEMPTY:
+        POP DX
+        POP DI
+        RET
+
+
+REMOVEEMPTY ENDP
 
 
 COUNTFUN:
