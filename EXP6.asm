@@ -2,6 +2,9 @@ DSEG    SEGMENT
         MUSIC DW 262,294,330,349,392,440,494
         CORRECTLETTER DB '1234567q$'
         FREQUENCY DW 500
+        LASTKEY DB 0
+
+        LYON DB 'LYON$'
        
 DSEG    ENDS
 
@@ -21,8 +24,27 @@ BEGIN:  MOV AX,DSEG
         OUT 43H, AL
 
 INPUT:
-        MOV AH, 07H
+        MOV AH, 01H
+        INT 16H
+        JZ NOKEY
+        JMP HAVEKEY
+
+NOKEY:
+        MOV AH, 09H
+        LEA DX, LYON
         INT 21H
+        CALL DELAY
+        ; END
+        IN AL, 61H
+        AND AL, 0FCH
+        OUT 61H, AL
+        JMP INPUT
+
+
+HAVEKEY:
+        ;CMP AL, LASTKEY
+        ;JZ INPUT
+        ;MOV LASTKEY,AL
         
         MOV DI, 0
 CHECK:
@@ -47,8 +69,24 @@ PASSLETTER:
         POP DX
 
         CALL SETFRE
-        CALL SOUND
-        CALL CLEAR
+
+        ; END
+        IN AL, 61H
+        AND AL, 0FCH
+        OUT 61H, AL
+
+        ; START
+        IN AL, 61H
+        OR AL, 03H
+        OUT 61H, AL
+
+        
+
+        MOV AH, 07H
+        INT 21H 
+
+
+        ;CALL CLEAR
         JMP INPUT
 
 RETURN:
@@ -58,25 +96,19 @@ RETURN:
 SETFRE PROC NEAR
 
         MOV		DX, 12H
-		MOV		AX, 34DEH
-		MOV		CX, FREQUENCY
-		DIV		CX
-		OUT		42H, AL
-		MOV		AL, AH
-		OUT		42H, AL
+        MOV		AX, 34DEH
+        MOV		CX, FREQUENCY
+        DIV		CX
+        OUT		42H, AL
+        MOV		AL, AH
+        OUT		42H, AL
 
         RET
 SETFRE ENDP
     
-SOUND PROC NEAR
- 
-        IN AL, 61H
-        OR AL, 03H
-        OUT 61H, AL
-
-
+DELAY PROC NEAR
         PUSH CX
-        MOV CX, 100
+        MOV CX, 20
 
 TIMEDELAY1:
         PUSH CX
@@ -89,13 +121,9 @@ TIMEDELAY2:
         LOOP TIMEDELAY1
         POP CX
        
-        IN AL, 61H
-        AND AL, 0FCH
-        OUT 61H, AL
-
         RET
 
-SOUND ENDP
+DELAY ENDP
 
 CLEAR PROC NEAR
         MOV AH, 0CH
