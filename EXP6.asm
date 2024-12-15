@@ -30,9 +30,6 @@ INPUT:
         JMP HAVEKEY
 
 NOKEY:
-        MOV AH, 09H
-        LEA DX, LYON
-        INT 21H
         CALL DELAY
         ; END
         IN AL, 61H
