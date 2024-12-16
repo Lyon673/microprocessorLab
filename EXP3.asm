@@ -45,11 +45,18 @@ PRINT MACRO STRING
         LEA DX,STRING
         INT 21H
 ENDM
-
 CSEG    SEGMENT
         ASSUME  CS:CSEG,DS:DSEG
 .386
+
 BEGIN:  
+        CALL EXP3
+        MOV AH,4CH
+        INT 21H
+
+PUBLIC EXP3
+EXP3 PROC FAR
+        PUSH DS
         MOV AX, DSEG
         MOV DS, AX
         MOV ES, AX
@@ -174,8 +181,11 @@ INSTRUCTION5:
 
 
 OVER:
-        MOV AH,4CH
-        INT 21H
+        POP DS
+        RET
+
+EXP3 ENDP
+        
 
 REMOVEEMPTY PROC NEAR
         PUSH DI

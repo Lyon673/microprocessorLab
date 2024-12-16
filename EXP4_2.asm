@@ -30,7 +30,13 @@ ENDM
 CSEG    SEGMENT
         ASSUME  CS:CSEG,DS:DSEG
 .386
-BEGIN:  MOV AX,DSEG
+BEGIN:  
+        CALL EXP4_2
+        MOV AH,4CH
+        INT 21H
+
+EXP4_2 PROC NEAR
+        MOV AX,DSEG
         MOV DS,AX
 
         PRINT QUERYSTRINGIMFORMATION
@@ -44,10 +50,12 @@ BEGIN:  MOV AX,DSEG
         CALL DSTRING
         CALL DSTRING
         CALL DSTRING
+
+        RET
+EXP4_2 ENDP
    
         
-        MOV AH,4CH
-        INT 21H
+      
 
 DSTRING PROC NEAR
         PUSH CX

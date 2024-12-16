@@ -25,7 +25,17 @@ ENDM
 CSEG    SEGMENT
         ASSUME  CS:CSEG,DS:DSEG
 .386
-BEGIN:  MOV AX,DSEG
+
+BEGIN:
+        CALL EXP5
+        MOV AH,4CH
+        INT 21H
+
+PUBLIC EXP5
+EXP5 PROC FAR
+        PUSH DS
+
+        MOV AX,DSEG
         MOV DS,AX
         MOV ES,AX
 
@@ -106,13 +116,9 @@ NOTOVER:
 
 
 OVER:
-
-
-
-        MOV AH,4CH
-        INT 21H
-
-
+        POP DS
+        RET
+EXP5 ENDP
 
 CSEG    ENDS
         END  BEGIN

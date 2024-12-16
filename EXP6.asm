@@ -16,7 +16,17 @@ SSEG    ENDS
 CSEG    SEGMENT
         ASSUME  CS:CSEG,DS:DSEG
 .386
-BEGIN:  MOV AX,DSEG
+BEGIN:
+        CALL EXP6
+        MOV AH,4CH
+        INT 21H
+
+
+
+PUBLIC EXP6
+EXP6 PROC FAR
+        PUSH DS
+        MOV AX,DSEG
         MOV DS,AX
 
         
@@ -87,8 +97,10 @@ PASSLETTER:
         JMP INPUT
 
 RETURN:
-        MOV AH,4CH
-        INT 21H
+       MOV AL, 0
+       POP DS
+       RET
+EXP6 ENDP
 
 SETFRE PROC NEAR
 

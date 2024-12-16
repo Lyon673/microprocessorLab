@@ -55,7 +55,14 @@ ENDM
 CSEG    SEGMENT
         ASSUME  CS:CSEG,DS:DSEG
 .386
-BEGIN:  
+BEGIN:
+        CALL EXP4
+        MOV AH,4CH
+        INT 21H
+
+PUBLIC EXP4
+EXP4 PROC FAR
+        PUSH DS
         MOV AX,DSEG
         MOV DS,AX
 
@@ -76,9 +83,10 @@ NOTONE:
         CALL WRITESQUARE
 
 RETURN:
- 
-        MOV AH,4CH
-        INT 21H
+        POP DS
+        RET
+
+EXP4 ENDP
 
 
 QUERYR PROC NEAR
