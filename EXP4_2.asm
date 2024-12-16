@@ -35,7 +35,9 @@ BEGIN:
         MOV AH,4CH
         INT 21H
 
-EXP4_2 PROC NEAR
+PUBLIC EXP4_2
+EXP4_2 PROC FAR
+        PUSH DS
         MOV AX,DSEG
         MOV DS,AX
 
@@ -48,9 +50,13 @@ EXP4_2 PROC NEAR
         CALL DSTRING
         CALL DSTRING
         CALL DSTRING
-        CALL DSTRING
-        CALL DSTRING
 
+
+        MOV AH, 2        ; BIOS 功能：设置光标位置
+        MOV BH, 0        ; 页号，通常为 0
+        MOV DX, 0      
+        INT 10H            ; 调用 BIOS
+        POP DS
         RET
 EXP4_2 ENDP
    

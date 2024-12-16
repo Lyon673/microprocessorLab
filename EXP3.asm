@@ -63,6 +63,15 @@ EXP3 PROC FAR
 
         
 ENTER10:
+
+        LEA BX, ONENUM+2 ;ONENUM清零
+        MOV DI,0
+        MOV CX, 20
+CLEAR1:
+        MOV BYTE PTR [BX+DI],0
+        INC DI
+        LOOP CLEAR1
+
         PRINT INPUTIMFORMATION
         MOV AH, 0AH
         LEA DX, ONENUM
@@ -105,13 +114,7 @@ LETTER:
 
 HAVEWRONG:
         MOV WRONGLETTERERROR,0
-        LEA BX, ONENUM+2 ;ONENUM清零
-        MOV DI,0
-        MOV CX, 20
-CLEAR1:
-        MOV BYTE PTR [BX+DI],0
-        INC DI
-        LOOP CLEAR1
+        
 
         MOV HAVEF,0
         DEC STRINGNUM
@@ -181,6 +184,12 @@ INSTRUCTION5:
 
 
 OVER:
+        ; for exp7
+        MOV NEGATIVENUM,0
+        MOV SUM,0
+        MOV HAVEF,0
+        MOV STRINGNUM,10
+        MOV SORTINDEX,0
         POP DS
         RET
 
