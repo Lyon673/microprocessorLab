@@ -31,6 +31,7 @@ DSEG    SEGMENT
         FLAG DB 0
         COLORFLAG DB 0
         DIRECTION DB 0
+        INTERUPPT DB 0
 
 DSEG    ENDS
 
@@ -55,10 +56,20 @@ ENDM
 CSEG    SEGMENT
         ASSUME  CS:CSEG,DS:DSEG
 .386
-BEGIN:  
+BEGIN:
+        CALL EXP4
+        MOV AH,4CH
+        INT 21H
+
+PUBLIC EXP4
+EXP4 PROC FAR
+        PUSH DS
         MOV AX,DSEG
         MOV DS,AX
 
+START:
+        CALL CLEAR
+        MOV INTERUPPT, 0
         CALL QUERYR
         SCREEN
         CMP R, 0
@@ -71,14 +82,24 @@ BEGIN:
         JMP RETURN
 
 NOTONE:
+        CALL CLEAR
         CALL CALCULATEY
         CALL WRITECIRCLE
+        CMP INTERUPPT,1
+        JNZ N1
+        JMP START
+N1:
         CALL WRITESQUARE
+        CMP INTERUPPT,1
+        JNZ N2
+        JMP START
+N2:
 
 RETURN:
- 
-        MOV AH,4CH
-        INT 21H
+        POP DS
+        RET
+
+EXP4 ENDP
 
 
 QUERYR PROC NEAR
@@ -211,6 +232,10 @@ NOTOVERLU:
         PUSH BX
         MOV BX, 0
         CALL DELAYANDCOLOR
+        CMP INTERUPPT,1
+        JNZ I1
+        RET
+I1:
         INT 10H
         POP BX
 
@@ -241,6 +266,10 @@ RU:
         MOV DX, YORG
         SUB DX, R
         CALL DELAYANDCOLOR
+        CMP INTERUPPT,1
+        JNZ I2
+        RET
+I2:
         INT 10H
 
         INC CX
@@ -267,6 +296,10 @@ NOTOVERRU:
         PUSH BX
         MOV BX, 0
         CALL DELAYANDCOLOR
+        CMP INTERUPPT,1
+        JNZ I3
+        RET
+I3:
         INT 10H
         POP BX
 
@@ -311,6 +344,10 @@ NOTOVERRD:
         PUSH BX
         MOV BX, 0
         CALL DELAYANDCOLOR
+        CMP INTERUPPT,1
+        JNZ I4
+        RET
+I4:
         INT 10H
         POP BX
 
@@ -341,6 +378,10 @@ LD:
         ADD DX, R
         MOV BX, 0
         CALL DELAYANDCOLOR
+        CMP INTERUPPT,1
+        JNZ I5
+        RET
+I5:
         INT 10H
         DEC CX
 
@@ -362,6 +403,10 @@ NOTOVERLD:
         PUSH BX
         MOV BX, 0
         CALL DELAYANDCOLOR
+        CMP INTERUPPT,1
+        JNZ I6
+        RET
+I6:
         INT 10H
         POP BX
 
@@ -406,6 +451,24 @@ SQROOT ENDP
 
 ; 延时以及改变颜色的函数
 DELAYANDCOLOR PROC NEAR
+        PUSH AX
+        MOV AX, 0
+        MOV AH, 01H
+        INT 16H
+        JZ NONINT
+        CMP AL, 'q'
+        JNZ NONINT
+        MOV INTERUPPT, 1
+
+        MOV AX, 0
+        MOV AH, 07H
+        INT 21H
+
+        POP AX
+        RET
+
+NONINT:
+        POP AX
         CMP DIRECTION, 3
         JNZ DXNOTMID
         CMP DX, YORG
@@ -430,7 +493,7 @@ COLOR1:
         MOV AL, 10
 
 COLOROVER:
-        MOV CX, 10000
+        MOV CX, 5000
 TIMEDELAY:
         NOP
         LOOP TIMEDELAY
@@ -487,6 +550,10 @@ WRITESQUARE PROC NEAR
         MOV DX, LUSQY
 UP:
         CALL DELAYANDCOLOR
+        CMP INTERUPPT,1
+        JNZ I7
+        RET
+I7:
         INT 10H
         CMP CX, RUSQX
         JZ RIGHT
@@ -495,6 +562,10 @@ UP:
 
 RIGHT:
         CALL DELAYANDCOLOR
+        CMP INTERUPPT,1
+        JNZ I8
+        RET
+I8:
         INT 10H
         CMP DX, RDSQY
         JZ DOWN
@@ -503,6 +574,10 @@ RIGHT:
 
 DOWN:
         CALL DELAYANDCOLOR
+        CMP INTERUPPT,1
+        JNZ I9
+        RET
+I9:
         INT 10H
         CMP CX, LDSQX
         JZ LEFT
@@ -513,6 +588,10 @@ LEFT:
         CMP DX, LUSQY
         JZ SQOVER
         CALL DELAYANDCOLOR
+        CMP INTERUPPT,1
+        JNZ I10
+        RET
+I10:
         INT 10H
         DEC DX
         JMP LEFT
@@ -526,6 +605,14 @@ SQOVER:
 
         RET
 WRITESQUARE ENDP
-    
+
+CLEAR PROC NEAR
+        MOV AH, 0CH
+        MOV AL, 0
+        INT 21H
+
+        RET
+CLEAR ENDP
+
 CSEG    ENDS
         END  BEGIN

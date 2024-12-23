@@ -45,17 +45,33 @@ PRINT MACRO STRING
         LEA DX,STRING
         INT 21H
 ENDM
-
 CSEG    SEGMENT
         ASSUME  CS:CSEG,DS:DSEG
 .386
+
 BEGIN:  
+        CALL EXP3
+        MOV AH,4CH
+        INT 21H
+
+PUBLIC EXP3
+EXP3 PROC FAR
+        PUSH DS
         MOV AX, DSEG
         MOV DS, AX
         MOV ES, AX
 
         
 ENTER10:
+
+        LEA BX, ONENUM+2 ;ONENUM清零
+        MOV DI,0
+        MOV CX, 20
+CLEAR1:
+        MOV BYTE PTR [BX+DI],0
+        INC DI
+        LOOP CLEAR1
+
         PRINT INPUTIMFORMATION
         MOV AH, 0AH
         LEA DX, ONENUM
@@ -98,13 +114,7 @@ LETTER:
 
 HAVEWRONG:
         MOV WRONGLETTERERROR,0
-        LEA BX, ONENUM+2 ;ONENUM清零
-        MOV DI,0
-        MOV CX, 20
-CLEAR1:
-        MOV BYTE PTR [BX+DI],0
-        INC DI
-        LOOP CLEAR1
+        
 
         MOV HAVEF,0
         DEC STRINGNUM
@@ -174,8 +184,17 @@ INSTRUCTION5:
 
 
 OVER:
-        MOV AH,4CH
-        INT 21H
+        ; for exp7
+        MOV NEGATIVENUM,0
+        MOV SUM,0
+        MOV HAVEF,0
+        MOV STRINGNUM,10
+        MOV SORTINDEX,0
+        POP DS
+        RET
+
+EXP3 ENDP
+        
 
 REMOVEEMPTY PROC NEAR
         PUSH DI
