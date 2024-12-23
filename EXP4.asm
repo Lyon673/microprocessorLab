@@ -234,6 +234,7 @@ NOTOVERLU:
         CALL DELAYANDCOLOR
         CMP INTERUPPT,1
         JNZ I1
+        POP BX
         RET
 I1:
         INT 10H
@@ -298,6 +299,7 @@ NOTOVERRU:
         CALL DELAYANDCOLOR
         CMP INTERUPPT,1
         JNZ I3
+        POP BX
         RET
 I3:
         INT 10H
@@ -346,6 +348,7 @@ NOTOVERRD:
         CALL DELAYANDCOLOR
         CMP INTERUPPT,1
         JNZ I4
+        POP BX
         RET
 I4:
         INT 10H
@@ -405,6 +408,7 @@ NOTOVERLD:
         CALL DELAYANDCOLOR
         CMP INTERUPPT,1
         JNZ I6
+        POP BX
         RET
 I6:
         INT 10H
@@ -457,7 +461,7 @@ DELAYANDCOLOR PROC NEAR
         INT 16H
         JZ NONINT
         CMP AL, 'q'
-        JNZ NONINT
+        JNZ NONINT_PRE
         MOV INTERUPPT, 1
 
         MOV AX, 0
@@ -467,6 +471,10 @@ DELAYANDCOLOR PROC NEAR
         POP AX
         RET
 
+NONINT_PRE:
+        MOV AX, 0
+        MOV AH, 07H
+        INT 21H
 NONINT:
         POP AX
         CMP DIRECTION, 3
@@ -552,7 +560,7 @@ UP:
         CALL DELAYANDCOLOR
         CMP INTERUPPT,1
         JNZ I7
-        RET
+        JMP SQOVER
 I7:
         INT 10H
         CMP CX, RUSQX
@@ -564,7 +572,7 @@ RIGHT:
         CALL DELAYANDCOLOR
         CMP INTERUPPT,1
         JNZ I8
-        RET
+        JMP SQOVER
 I8:
         INT 10H
         CMP DX, RDSQY
@@ -576,7 +584,7 @@ DOWN:
         CALL DELAYANDCOLOR
         CMP INTERUPPT,1
         JNZ I9
-        RET
+        JMP SQOVER
 I9:
         INT 10H
         CMP CX, LDSQX
@@ -590,7 +598,7 @@ LEFT:
         CALL DELAYANDCOLOR
         CMP INTERUPPT,1
         JNZ I10
-        RET
+        JMP SQOVER
 I10:
         INT 10H
         DEC DX
