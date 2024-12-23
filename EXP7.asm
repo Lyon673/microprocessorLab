@@ -6,7 +6,7 @@ EXTRN EXP6:FAR
 DSEG    SEGMENT
         ENTERINFORMATION DB 'Please enter the experiment program you want to run (from 3 to 6,q for quit):$'
         ENDIMFORMATION DB 0DH,0AH,24H
-        LYON DB 'LYON'
+        LYON DB 'LYON$'
 DSEG    ENDS
 
 SSEG    SEGMENT PARA STACK 
