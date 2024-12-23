@@ -97,9 +97,10 @@ PASSLETTER:
         JMP INPUT
 
 RETURN:
-       MOV AL, 0
-       POP DS
-       RET
+        CALL CLEAR
+        MOV AL, 0
+        POP DS
+        RET
 EXP6 ENDP
 
 SETFRE PROC NEAR

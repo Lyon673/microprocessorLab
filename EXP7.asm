@@ -1,9 +1,11 @@
 EXTRN EXP3:FAR
 EXTRN EXP4:FAR 
+EXTRN EXP4_2:FAR
 EXTRN EXP5:FAR 
 EXTRN EXP6:FAR
 
 DSEG    SEGMENT
+        SEGMENTINFORMATION DB '-----------------------------------------------------------------------------$'
         ENTERINFORMATION DB 'Please enter the experiment program you want to run (from 3 to 6,q for quit):$'
         ENDIMFORMATION DB 0DH,0AH,24H
         LYON DB 'LYON$'
@@ -27,15 +29,17 @@ BEGIN:
         MOV DS,AX
 
 
+
+
 START:
-        
+        PRINT ENDIMFORMATION
+        PRINT SEGMENTINFORMATION
         MOV AL, 0
         PRINT ENDIMFORMATION
         PRINT ENTERINFORMATION
         MOV AH, 07H
         INT 21H
         PRINT ENDIMFORMATION
-        PRINT LYON
 
         CMP AL, '3'
         JZ FUNC3
@@ -59,6 +63,7 @@ FUNC3:
         JMP START
 
 FUNC4:
+        CALL EXP4_2
         CALL EXP4
         JMP START
 
@@ -68,7 +73,6 @@ FUNC5:
 
 FUNC6: 
         CALL EXP6
-        PRINT LYON
         JMP START
 
 
