@@ -33,6 +33,8 @@ DSEG    SEGMENT
         DIRECTION DB 0
         INTERUPPT DB 0
 
+        QFLAG DB 0
+
 DSEG    ENDS
 
 SSEG    SEGMENT PARA STACK 
@@ -67,11 +69,14 @@ EXP4 PROC FAR
         MOV AX,DSEG
         MOV DS,AX
 
+        MOV QFLAG,0
 START:
         CALL CLEAR
         MOV INTERUPPT, 0
         CALL QUERYR
-        SCREEN
+        CMP QFLAG,1
+        JZ RETURN
+        SCREEN 
         CMP R, 0
         JNZ NOTONE
         MOV AH, 0CH
@@ -107,6 +112,12 @@ QUERYR PROC NEAR
         MOV AH, 0AH
         LEA DX, RSTRING
         INT 21H
+        CMP RSTRING[2],'q'
+        JNZ NOTQ
+        MOV QFLAG,1
+        RET
+
+NOTQ:
         PRINT ENDIMFORMATION
         CALL STORER
         RET

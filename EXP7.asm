@@ -6,7 +6,15 @@ EXTRN EXP6:FAR
 
 DSEG    SEGMENT
         SEGMENTINFORMATION DB '-----------------------------------------------------------------------------$'
-        ENTERINFORMATION DB 'Please enter the experiment program you want to run (from 3 to 6,q for quit):$'
+        ENTERINFORMATION0 DB 'Instructions Table:',0DH,0AH
+        ENTERINFORMATION1 DB '1.sort',0DH,0AH
+        ENTERINFORMATION2 DB '2.dynamic title',0DH,0AH
+        ENTERINFORMATION3 DB '3.draw circle',0DH,0AH
+        ENTERINFORMATION4 DB '4.Hexadecimal to decimal',0DH,0AH
+        ENTERINFORMATION5 DB '5.keyboard',0DH,0AH 
+        ENTERINFORMATION6 DB 'q.''q'' for quit',0DH,0AH    
+        SEGMENTINFORMATION1 DB '-----------------------------------------------------------------------------',0DH,0AH               
+        ENTERINFORMATION DB 'Please enter the experiment program you want to run :$'
         ENDIMFORMATION DB 0DH,0AH,24H
         LYON DB 'LYON$'
 DSEG    ENDS
@@ -36,10 +44,16 @@ START:
         PRINT SEGMENTINFORMATION
         MOV AL, 0
         PRINT ENDIMFORMATION
-        PRINT ENTERINFORMATION
+        PRINT ENTERINFORMATION0
         MOV AH, 07H
         INT 21H
         PRINT ENDIMFORMATION
+
+        CMP AL, '1'
+        JZ FUNC1
+
+        CMP AL, '2'
+        JZ FUNC2
 
         CMP AL, '3'
         JZ FUNC3
@@ -50,28 +64,34 @@ START:
         CMP AL, '5'
         JZ FUNC5
 
-        CMP AL, '6'
-        JZ FUNC6
-
         CMP AL, 'q'
         JZ OVER
 
         JMP START
 
-FUNC3:
+FUNC1:
         CALL EXP3
         JMP START
 
-FUNC4:
+FUNC2:
         CALL EXP4_2
-        CALL EXP4
         JMP START
 
-FUNC5:
+FUNC3:
+        CALL EXP4
+        MOV AX, 0600h    
+        MOV BH, 00h      
+        MOV CX, 0        
+        MOV DX, 4F9Fh    
+        INT 10h          
+
+        JMP START
+
+FUNC4:
         CALL EXP5
         JMP START
 
-FUNC6: 
+FUNC5: 
         CALL EXP6
         JMP START
 
